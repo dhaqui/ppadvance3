@@ -1,28 +1,46 @@
 import express from "express";
 import fetch from "node-fetch";
 import "dotenv/config";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PORT = 4000 } = process.env;
 const base = "https://api-m.sandbox.paypal.com";
 const app = express();
 
-app.set("view engine", "ejs");
-app.set("views", "./server/views");
-
-// host static files
-app.use(express.static("client"));
-//app.use(express.static(path.join(__dirname, "public")));
-
-// parse post params sent in body in json format
-app.use(express.json());
-
-import path from "path";
-import { fileURLToPath } from "url";
-
+// __dirname の取得（ESMの場合）
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ビューエンジンの設定
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+// 静的ファイルの提供
+// client フォルダが存在しない場合は以下は削除またはコメントアウト
+// app.use(express.static("client"));
 app.use(express.static(path.join(__dirname, "public")));
+
+// JSON ボディのパース
+app.use(express.json());
+
+// ルート例
+app.get("/checkout", (req, res) => {
+  res.render("checkout");
+});
+
+app.get("/", (req, res) => {
+  res.send("Hello from Express on Vercel!");
+});
+
+// ローカルで実行する場合のみサーバー起動（Vercel 環境では不要）
+if (process.env.LOCAL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
 
 
 /**
